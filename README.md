@@ -2,13 +2,15 @@
 
 [원본](https://www.eksworkshop.com/)
 
-- ## [Kubernetes 소개](./Introduction/010_introduction.md)
+## Overview
 
-- ## [워크샵 사전 준비](./Introduction/020_prerequisites.md)
+  - ### [Kubernetes 소개](./Introduction/010_introduction.md)
 
-- ## [eksctl 을 사용하여 시작](./Introduction/030_eksctl.md)
+  - ### [워크샵 사전 준비](./Introduction/020_prerequisites.md)
 
-## 초보자
+  - ### [eksctl 을 사용하여 시작](./Introduction/030_eksctl.md)
+
+## Beginer
 
   - ### [Kubernetes 대시보드 배포](./Beginner/040_dashboard.md)
 
