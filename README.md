@@ -2,7 +2,7 @@
 
 [원본](https://www.eksworkshop.com/)
 
-## Overview
+## Introduction
 
   - ### [Kubernetes 소개](./Introduction/010_introduction.md)
 
