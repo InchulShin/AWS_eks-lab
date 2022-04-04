@@ -1,6 +1,6 @@
 # Table of contents
 
-* [EKSworkshop](README.md)
+* [EKS-LAB](README.md)
 * [Introduction](introduction/README.md)
   * [쿠버네티스 소개](Introduction/010\_introduction.md)
   * [시작하기](introduction/020\_prerequisites.md)

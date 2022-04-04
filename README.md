@@ -1,11 +1,11 @@
-# EKSworkshop
+# EKS-LAB
 
 [원본](https://www.eksworkshop.com)
 
 ## Introduction
 
 * #### [Kubernetes 소개](Introduction/010\_introduction.md)
-* #### [워크샵 사전 준비](introduction/020\_prerequisites.md)
+* #### [LAB 사전 준비](introduction/020\_prerequisites.md)
 * #### [eksctl 을 사용하여 시작](introduction/030\_eksctl.md)
 
 ## Beginer
