@@ -1,29 +1,30 @@
 # 포드용 보안 그룹
+
 ## 소개
-컨테이너화된 애플리케이션은 클러스터 내에서 실행되는 다른 서비스와 다음과 같은 외부 AWS 서비스에 대한 액세스가 필요한 경우가 많습니다. [Amazon 관계형 데이터베이스 서비스](https://www.google.com/url?sa=t&rct=j&q=&esrc=s&source=web&cd=&cad=rja&uact=8&ved=2ahUKEwiYkYfF9bHtAhWEwFkKHT6nD7kQFjAAegQIARAD&url=https%3A%2F%2Faws.amazon.com%2Frds%2F&usg=AOvVaw1EJQFNeMAoVICsb0iec7IR) (아마존 RDS).
+
+컨테이너화된 애플리케이션은 클러스터 내에서 실행되는 다른 서비스와 다음과 같은 외부 AWS 서비스에 대한 액세스가 필요한 경우가 많습니다. [Amazon 관계형 데이터베이스 서비스](https://www.google.com/url?sa=t\&rct=j\&q=\&esrc=s\&source=web\&cd=\&cad=rja\&uact=8\&ved=2ahUKEwiYkYfF9bHtAhWEwFkKHT6nD7kQFjAAegQIARAD\&url=https%3A%2F%2Faws.amazon.com%2Frds%2F\&usg=AOvVaw1EJQFNeMAoVICsb0iec7IR) (아마존 RDS).
 
 AWS에서 서비스 간의 네트워크 수준 액세스 제어는 종종 다음을 통해 수행됩니다. [보안 그룹](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-security-groups.html).
 
 이 새로운 기능이 출시되기 전에는 노드 수준에서만 보안 그룹을 할당할 수 있었습니다. 그리고 노드 그룹 내의 모든 노드가 보안 그룹을 공유하기 때문에 노드 그룹 보안 그룹이 RDS 인스턴스에 액세스할 수 있도록 함으로써 녹색 포드만 액세스해야 하는 경우에도 이 노드에서 실행되는 모든 포드가 데이터베이스에 액세스할 수 있습니다.
 
-![](./images/sg-per-pod_1.png)
+![](../Beginner/images/sg-per-pod\_1.png)
 
 [포드용 보안 그룹](https://docs.aws.amazon.com/eks/latest/userguide/security-groups-for-pods.html) Amazon EC2 보안 그룹을 Kubernetes 포드와 통합합니다. Amazon EC2 보안 그룹을 사용하여 여러 Amazon EC2 인스턴스 유형에서 실행되는 노드에 배포하는 포드에서 들어오고 나가는 인바운드 및 아웃바운드 네트워크 트래픽을 허용하는 규칙을 정의할 수 있습니다. 이 기능에 대한 자세한 설명은 다음을 참조하십시오. [포드용 보안 그룹 소개 블로그 게시물](https://aws.amazon.com/blogs/containers/introducing-security-groups-for-pods/) 그리고 [공식 문서](https://docs.aws.amazon.com/eks/latest/userguide/security-groups-for-pods.html).
 
 ## 목표
+
 워크숍의 이 섹션에서:
 
-- RDS_SG라는 보안 그룹으로 보호되는 Amazon RDS 데이터베이스를 생성합니다.
+* RDS\_SG라는 보안 그룹으로 보호되는 Amazon RDS 데이터베이스를 생성합니다.
+* RDS 인스턴스에 연결할 수 있는 POD\_SG라는 보안 그룹을 생성합니다.
+* 그런 다음 SecurityGroupPolicyPOD\_SG 보안 그룹을 올바른 메타데이터가 있는 포드에 자동으로 연결하는 배포를 배포합니다 .
+* 마지막으로 동일한 이미지를 사용하여 두 개의 포드(녹색 및 빨간색)를 배포하고 그 중 하나만(녹색) Amazon RDS 데이터베이스에 연결할 수 있는지 확인합니다.
 
-- RDS 인스턴스에 연결할 수 있는 POD_SG라는 보안 그룹을 생성합니다.
-
-- 그런 다음 SecurityGroupPolicyPOD_SG 보안 그룹을 올바른 메타데이터가 있는 포드에 자동으로 연결하는 배포를 배포합니다 .
-
-- 마지막으로 동일한 이미지를 사용하여 두 개의 포드(녹색 및 빨간색)를 배포하고 그 중 하나만(녹색) Amazon RDS 데이터베이스에 연결할 수 있는지 확인합니다.
-
-![](./images/sg-per-pod_3.png)
+![](../Beginner/images/sg-per-pod\_3.png)
 
 ## 전제 조건
+
 포드의 보안 그룹은 포함한 대부분의 니트로 기반 아마존 EC2 인스턴스 가족, 지원하는 m5, c5, r5, p3, m6g, c6g, 및 r6g인스턴스 가족. 인스턴스 가족은 지원되지 않습니다 그래서 우리는 하나 개를 사용하여 두 번째 노드 그룹이 생성됩니다 인스턴스를.t3m5.large
 
 ```
@@ -54,8 +55,10 @@ ip-192-168-34-45.us-east-2.compute.internal    Ready    <none>   4m57s   v1.17.1
 ```
 
 ## 보안 그룹 생성
+
 ### 보안 그룹 생성 및 구성
-먼저 RDS 보안 그룹(RDS_SG)을 생성해 보겠습니다. Amazon RDS 인스턴스에서 네트워크 액세스를 제어하는 ​​데 사용됩니다.
+
+먼저 RDS 보안 그룹(RDS\_SG)을 생성해 보겠습니다. Amazon RDS 인스턴스에서 네트워크 액세스를 제어하는 ​​데 사용됩니다.
 
 ```
 export VPC_ID=$(aws eks describe-cluster \
@@ -77,7 +80,7 @@ export RDS_SG=$(aws ec2 describe-security-groups \
 echo "RDS security group ID: ${RDS_SG}"
 ```
 
-이제 Pod 보안 그룹(POD_SG)을 생성해 보겠습니다.
+이제 Pod 보안 그룹(POD\_SG)을 생성해 보겠습니다.
 
 ```
 # create the POD security group
@@ -118,11 +121,10 @@ aws ec2 authorize-security-group-ingress \
     --source-group ${POD_SG}
 ```
 
-마지막으로 두 개의 인바운드 트래픽(인그레스)을 추가합니다. 규칙 RDS_SG 보안 그룹:
+마지막으로 두 개의 인바운드 트래픽(인그레스)을 추가합니다. 규칙 RDS\_SG 보안 그룹:
 
-- 하나는 Cloud9용(데이터베이스 채우기용)입니다.
-
-- 그리고 두 번째는 POD_SG 보안 그룹이 데이터베이스에 연결할 수 있도록 허용합니다.
+* 하나는 Cloud9용(데이터베이스 채우기용)입니다.
+* 그리고 두 번째는 POD\_SG 보안 그룹이 데이터베이스에 연결할 수 있도록 허용합니다.
 
 ```
 # Cloud9 IP
@@ -144,6 +146,7 @@ aws ec2 authorize-security-group-ingress \
 ```
 
 ## RDS 생성
+
 이제 보안 그룹이 준비되었으므로 PostgreSQL용 Amazon RDS 데이터베이스를 생성해 보겠습니다.
 
 먼저 생성해야 합니다. DB 서브넷 그룹. EKS 클러스터와 동일한 서브넷을 사용합니다.
@@ -239,11 +242,11 @@ psql postgresql://eksworkshop:${RDS_PASSWORD}@${RDS_ENDPOINT}:5432/eksworkshop \
 ```
 
 ## CNI 구성
+
 이 새로운 기능을 활성화하기 위해 Amazon EKS 클러스터에는 Kubernetes 제어 플레인에서 실행되는 두 가지 새로운 구성 요소가 있습니다.
 
-- 보안 그룹이 필요한 포드에 제한 및 요청을 추가하는 작업을 담당 하는 변형 웹훅 입니다.
-
-- 관리를 담당 하는 리소스 컨트롤러네트워크 인터페이스 해당 포드와 연결됩니다.
+* 보안 그룹이 필요한 포드에 제한 및 요청을 추가하는 작업을 담당 하는 변형 웹훅 입니다.
+* 관리를 담당 하는 리소스 컨트롤러네트워크 인터페이스 해당 포드와 연결됩니다.
 
 이 기능을 용이하게 하기 위해 각 작업자 노드는 단일 트렁크 네트워크 인터페이스 및 여러 분기 네트워크 인터페이스와 연결됩니다. 트렁크 인터페이스는 인스턴스에 연결된 표준 네트워크 인터페이스 역할을 합니다. 그런 다음 VPC 리소스 컨트롤러는 분기 인터페이스를 트렁크 인터페이스에 연결합니다. 이렇게 하면 인스턴스당 연결할 수 있는 네트워크 인터페이스 수가 늘어납니다. 보안 그룹은 네트워크 인터페이스로 지정되므로 이제 작업자 노드에 할당된 이러한 추가 네트워크 인터페이스에 특정 보안 그룹이 필요한 팟(Pod)을 예약할 수 있습니다.
 
@@ -257,7 +260,7 @@ aws iam attach-role-policy \
     --role-name ${ROLE_NAME}
 ```
 
-다음으로 ENABLE_POD_ENIaws-node 에서 변수를 true 로 설정하여 CNI 플러그인이 포드의 네트워크 인터페이스를 관리할 수 있도록 합니다 DaemonSet.
+다음으로 ENABLE\_POD\_ENIaws-node 에서 변수를 true 로 설정하여 CNI 플러그인이 포드의 네트워크 인터페이스를 관리할 수 있도록 합니다 DaemonSet.
 
 ```
 kubectl -n kube-system set env daemonset aws-node ENABLE_POD_ENI=true
@@ -274,10 +277,12 @@ kubectl -n kube-system rollout status ds aws-node
   --show-labels
 ```
 
-![](./images/sg-per-pod_4.png)
+![](../Beginner/images/sg-per-pod\_4.png)
 
 ## 보안 그룹 정책
+
 ### 보안 그룹 정책
+
 새 사용자 지정 리소스 정의(CRD)도 클러스터 생성 시 자동으로 추가되었습니다. 클러스터 관리자는 SecurityGroupPolicyCRD를 통해 포드에 할당할 보안 그룹을 지정할 수 있습니다. 네임스페이스 내에서 포드 레이블을 기반으로 하거나 포드와 연결된 서비스 계정의 레이블을 기반으로 포드를 선택할 수 있습니다. 일치하는 모든 포드에 대해 적용할 보안 그룹 ID도 정의합니다.
 
 이 명령으로 CRD가 있는지 확인할 수 있습니다.
@@ -351,7 +356,9 @@ Events:  <none>
 ```
 
 ## 포드 배포
+
 ### 쿠버네티스 비밀
+
 두 개의 포드를 배포하기 전에 RDS 엔드포인트와 암호를 제공해야 합니다. 우리는 kubernetes 비밀을 만들 것입니다.
 
 ```
@@ -387,6 +394,7 @@ password:  32 bytes
 ```
 
 ### 배포
+
 두 포드 배포 파일을 모두 다운로드합시다.
 
 ```
@@ -398,9 +406,10 @@ curl -s -O https://www.eksworkshop.com/beginner/115_sg-per-pod/deployments.files
 
 시간을 내어 두 YAML 파일을 모두 살펴보고 두 파일의 차이점을 확인하세요.
 
-![](./images/sg-per-pod_5.png)
+![](../Beginner/images/sg-per-pod\_5.png)
 
 ### 그린포드
+
 이제 녹색 포드를 배포해 보겠습니다.
 
 ```
@@ -411,9 +420,8 @@ kubectl -n sg-per-pod rollout status deployment green-pod
 
 컨테이너는 다음을 시도합니다.
 
-- 데이터베이스에 연결하고 테이블의 내용을 STDOUT 으로 출력 합니다.
-
-- 데이터베이스 연결이 실패하면 오류 메시지도 STDOUT 으로 출력됩니다 .
+* 데이터베이스에 연결하고 테이블의 내용을 STDOUT 으로 출력 합니다.
+* 데이터베이스 연결이 실패하면 오류 메시지도 STDOUT 으로 출력됩니다 .
 
 로그를 확인해보자.
 
@@ -433,10 +441,8 @@ CTRL+C 를 사용 하여 로그 종료
 
 이제 다음을 확인하겠습니다.
 
-- ENI가 포드에 연결됩니다.
-
-- 그리고 ENI에는 보안 그룹 POD_SG가 연결되어 있습니다.
-Annotations이 명령을 사용하여 pod 섹션 에서 ENI ID를 찾을 수 있습니다 .
+* ENI가 포드에 연결됩니다.
+* 그리고 ENI에는 보안 그룹 POD\_SG가 연결되어 있습니다. Annotations이 명령을 사용하여 pod 섹션 에서 ENI ID를 찾을 수 있습니다 .
 
 ```
 kubectl -n sg-per-pod  describe pod $GREEN_POD_NAME | head -11
@@ -457,18 +463,17 @@ Annotations:  kubernetes.io/psp: eks.privileged
                 [{"eniId":"eni-0d8a3a3a7f2eb57ab","ifAddress":"06:20:0d:3c:5f:bc","privateIp":"192.168.47.64","vlanId":1,"subnetCidr":"192.168.32.0/19"}]
 Status:       Running
 ```
-이것을 열어서 보안 그룹 POD_SG가 eni위에 표시된 것에 연결되어 있는지 확인할 수 있습니다.링크.
 
-![](./images/sg-per-pod_6.png)
+이것을 열어서 보안 그룹 POD\_SG가 eni위에 표시된 것에 연결되어 있는지 확인할 수 있습니다.링크.
 
-레드포드
-빨간색 포드를 배포하고 데이터베이스에 연결할 수 없는지 확인합니다.
+![](../Beginner/images/sg-per-pod\_6.png)
+
+레드포드 빨간색 포드를 배포하고 데이터베이스에 연결할 수 없는지 확인합니다.
 
 녹색 포드와 마찬가지로 컨테이너는 다음을 시도합니다.
 
-- 데이터베이스에 연결 하고 테이블의 내용 을 STDOUT으로 출력 합니다.
-
-- 데이터베이스 연결이 실패하면 오류 메시지도 STDOUT 으로 출력됩니다 .
+* 데이터베이스에 연결 하고 테이블의 내용 을 STDOUT으로 출력 합니다.
+* 데이터베이스 연결이 실패하면 오류 메시지도 STDOUT 으로 출력됩니다 .
 
 ```
 kubectl -n sg-per-pod apply -f ~/environment/sg-per-pod/red-pod.yaml
@@ -513,6 +518,7 @@ IPs:
 ```
 
 ### 결론
+
 이 모듈에서는 포드당 보안 그룹 기능을 활성화하도록 EKS 클러스터를 구성했습니다.
 
 SecurityGroup정책을 만들고 보안 그룹으로 보호되는 2개의 포드(동일한 도커 이미지 사용)와 RDS 데이터베이스를 배포했습니다.
@@ -636,4 +642,3 @@ kubectl label node  --all 'vpc.amazonaws.com/has-trunk-attached'-
 cd ~/environment
 rm -rf sg-per-pod
 ```
-

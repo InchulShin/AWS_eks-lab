@@ -9,9 +9,8 @@ HPA(Horizontal Pod Autoscaler) 는 배포 또는 복제본 세트의 포드를 �
 클러스터 오토스케일러(CA) 는 쿠버네티스 클러스터의 크기를 자동으로 조정하여 모든 포드가 실행할 장소를 갖고 불필요한 노드가 없도록 하는 구성요소입니다.
 
 ## KUBE-OPS-VIEW 설치
-EKS 클러스터에 대한 다양한 자동 크기 조정 옵션에 대해 알아보기 전에 설치할 것입니다. [큐브 작업 보기](https://github.com/hjacobs/kube-ops-view) ~에서 [헤닝 제이콥스](https://github.com/hjacobs)
-.
-Kube-ops-view는 클러스터 설정을 시각적으로 이해하는 데 도움이 되는 Kubernetes 클러스터에 대한 일반적인 운영 그림을 제공합니다.
+
+EKS 클러스터에 대한 다양한 자동 크기 조정 옵션에 대해 알아보기 전에 설치할 것입니다. [큐브 작업 보기](https://github.com/hjacobs/kube-ops-view) \~에서 [헤닝 제이콥스](https://github.com/hjacobs) . Kube-ops-view는 클러스터 설정을 시각적으로 이해하는 데 도움이 되는 Kubernetes 클러스터에 대한 일반적인 운영 그림을 제공합니다.
 
 ```
 우리는 Helm이전에 구성한 것을 사용하여 kube-ops-view를 배포할 것입니다.기준 치수
@@ -51,13 +50,13 @@ kube-ops-view   1               Sun Sep 22 11:47:31 2019        DEPLOYED        
 kubectl get svc kube-ops-view | tail -n 1 | awk '{ print "Kube-ops-view URL = http://"$4 }'
 ```
 
-그러면 Kube-ops-view URL = http://<URL_PREFIX_ELB>.amazonaws.com 브라우저에서 URL 을 열면 클러스터의 현재 상태가 제공되는 것과 유사한 줄이 표시 됩니다.
+그러면 Kube-ops-view URL = http://\<URL\_PREFIX\_ELB>.amazonaws.com 브라우저에서 URL 을 열면 클러스터의 현재 상태가 제공되는 것과 유사한 줄이 표시 됩니다.
 
 ```
 페이지를 새로 고치고 브라우저 캐시를 정리해야 할 수도 있습니다. LoadBalancer 생성 및 설정에는 몇 분이 소요될 수 있습니다. 일반적으로 2분 안에 kub-ops-view가 표시됩니다.
 ```
 
-![](./images/kube-ops-view.png)
+![](../Beginner/images/kube-ops-view.png)
 
 이 워크샵이 진행되고 확장 및 축소 작업을 수행함에 따라 kube-ops-view를 사용하여 클러스터의 효과 및 변경 사항을 확인할 수 있습니다. 다양한 구성 요소를 확인하고 이 워크숍에서 이미 다룬 개념에 어떻게 매핑되는지 확인하십시오.
 
@@ -65,11 +64,11 @@ kubectl get svc kube-ops-view | tail -n 1 | awk '{ print "Kube-ops-view URL = ht
 EKS 클러스터의 상태와 속성을 확인하는 데 시간을 할애하십시오.
 ```
 
-![](./images/kube-ops-view-legend.png)
+![](../Beginner/images/kube-ops-view-legend.png)
 
 ## 수평형 포드 AUTOSCALER(HPA) 구성
-메트릭 서버 배포
-Metrics Server는 Kubernetes 기본 제공 자동 확장 파이프라인을 위한 확장 가능하고 효율적인 컨테이너 리소스 메트릭 소스입니다.
+
+메트릭 서버 배포 Metrics Server는 Kubernetes 기본 제공 자동 확장 파이프라인을 위한 확장 가능하고 효율적인 컨테이너 리소스 메트릭 소스입니다.
 
 이러한 메트릭은 [배포](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/).
 
@@ -102,7 +101,9 @@ kubectl get apiservice v1beta1.metrics.k8s.io -o json | jq '.status'
 이제 배포된 애플리케이션을 확장할 준비가 되었습니다.
 
 ## HPA로 애플리케이션 확장
+
 ### 샘플 앱 배포
+
 애플리케이션을 배포하고 TCP 포트 80에서 서비스로 노출합니다.
 
 응용 프로그램은 php-apache 이미지를 기반으로 하는 맞춤형 이미지입니다. index.php 페이지는 CPU 부하를 생성하기 위해 계산을 수행합니다. 더 많은 정보를 찾을 수 있습니다여기
@@ -116,6 +117,7 @@ kubectl get pod -l app=php-apache
 ```
 
 ### HPA 리소스 만들기
+
 이 HPA는 CPU가 할당된 컨테이너 리소스의 50%를 초과하면 확장됩니다.
 
 ```
@@ -125,13 +127,14 @@ kubectl autoscale deployment php-apache `#The target average CPU utilization` \
     --max=10 `#The upper limit for the number of pods that can be set by the autoscaler`
 ```
 
-kubectl을 사용하여 HPA를 봅니다. 아마 <unknown>/50%1-2분 동안 볼 수 있을 것입니다.0%/50%
+kubectl을 사용하여 HPA를 봅니다. 아마 /50%1-2분 동안 볼 수 있을 것입니다.0%/50%
 
 ```
 kubectl get hpa
 ```
 
 ### 확장을 트리거하는 부하 생성
+
 Cloud9 환경에서 새 터미널 을 열고 다음 명령을 실행하여 새 컨테이너의 셸에 드롭합니다.
 
 ```
@@ -152,26 +155,25 @@ kubectl get hpa -w
 
 CPU 평균이 목표(50%) 미만이 될 때까지 HPA가 포드를 1에서 구성된 최대값(10)까지 확장하는 것을 볼 수 있습니다.
 
-![](./images/scaling-hpa-results.png)
+![](../Beginner/images/scaling-hpa-results.png)
 
 이제 다른 터미널에서 실행 중이던 부하 테스트를 중지( Ctrl + C ) 할 수 있습니다 . HPA가 구성에 따라 복제본 수를 최소 수로 천천히 가져오는 것을 알 수 있습니다. 또한 Ctrl + D 를 눌러 부하 테스트 응용 프로그램을 종료해야 합니다 .
 
 ## 클러스터 자동 확장 처리(CA) 구성
+
 AWS용 Cluster Autoscaler는 Auto Scaling 그룹과의 통합을 제공합니다. 이를 통해 사용자는 4가지 배포 옵션 중에서 선택할 수 있습니다.
 
-- Auto Scaling 그룹 1개
-
-- 여러 Auto Scaling 그룹
-
-- 자동 검색
-
-- 제어 평면 노드 설정
+* Auto Scaling 그룹 1개
+* 여러 Auto Scaling 그룹
+* 자동 검색
+* 제어 평면 노드 설정
 
 자동 검색은 클러스터 자동 확장 처리를 구성하는 데 선호되는 방법입니다. 딸깍 하는 소리여기 자세한 내용은.
 
 Cluster Autoscaler는 시작 구성 또는 시작 템플릿에 지정된 인스턴스 유형을 기반으로 Auto Scaling 그룹에서 제공하는 CPU, 메모리 및 GPU 리소스를 결정하려고 시도합니다.
 
 ### ASG 구성
+
 최소, 최대, 원하는 용량을 설정하여 Auto Scaling 그룹의 크기를 구성합니다. 클러스터를 생성할 때 이 설정을 3으로 설정했습니다.
 
 ```
@@ -324,11 +326,14 @@ kubectl -n kube-system logs -f deployment/cluster-autoscaler
 
 이제 클러스터를 확장할 준비가 되었습니다.
 
- 관련 파일
-- [cluster-autoscaler-autodiscover.yaml](https://www.eksworkshop.com/beginner/080_scaling/deploy_ca.files/cluster-autoscaler-autodiscover.yaml) (4 Ko)
+관련 파일
+
+* [cluster-autoscaler-autodiscover.yaml](https://www.eksworkshop.com/beginner/080\_scaling/deploy\_ca.files/cluster-autoscaler-autodiscover.yaml) (4 Ko)
 
 ## CA로 클러스터 확장
+
 ### 샘플 앱 배포
+
 샘플 nginx 애플리케이션 ReplicaSet을 1 부터 배포합니다.Pod
 
 ```
@@ -366,6 +371,7 @@ kubectl get deployment/nginx-to-scaleout
 ```
 
 ### ReplicaSet 확장
+
 복제 집합을 10으로 확장해 보겠습니다.
 
 ```
@@ -404,11 +410,11 @@ kubectl -n kube-system logs -f deployment/cluster-autoscaler
 
 아래와 유사한 Cluster Autoscaler 이벤트를 확인할 수 있습니다.
 
-![](./images/scaling-asg-up2.png)
+![](../Beginner/images/scaling-asg-up2.png)
 
 을 체크 해봐 [EC2 AWS 관리 콘솔](https://console.aws.amazon.com/ec2/home?#Instances:sort=instanceId) Auto Scaling 그룹이 수요에 맞게 확장되고 있는지 확인합니다. 이 작업은 몇 분 정도 걸릴 수 있습니다. 명령줄에서 포드 배포를 따를 수도 있습니다. 노드가 확장됨에 따라 포드가 보류에서 실행으로 전환되는 것을 볼 수 있습니다.
 
-![](./images/scaling-asg-up.png)
+![](../Beginner/images/scaling-asg-up.png)
 
 또는 kubectl을 사용하여
 

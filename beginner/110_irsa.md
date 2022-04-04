@@ -1,7 +1,10 @@
 # 서비스 계정에 대한 IAM 역할
-### 서비스 계정에 대한 세분화된 IAM 역할
 
-Kubernetes 버전 1.12에서는  서비스 계정 ID도 포함하고 구성 가능한 대상을 지원하는 OIDC JSON 웹 토큰인 새로운 ProjectedServiceAccountToken 기능 에 대한 지원이 추가되었습니다  .
+## 서비스 계정에 대한 IAM 역할
+
+#### 서비스 계정에 대한 세분화된 IAM 역할
+
+Kubernetes 버전 1.12에서는 서비스 계정 ID도 포함하고 구성 가능한 대상을 지원하는 OIDC JSON 웹 토큰인 새로운 ProjectedServiceAccountToken 기능 에 대한 지원이 추가되었습니다 .
 
 이제 Amazon EKS는 ProjectedServiceAccountToken JSON 웹 토큰에 대한 서명 키가 포함된 클러스터당 공개 OIDC 검색 엔드포인트를 호스팅하므로 IAM과 같은 외부 시스템이 Kubernetes 발급 OIDC 토큰을 확인하고 수락할 수 있습니다.
 
@@ -9,8 +12,10 @@ OIDC 연동 액세스를 통해 STS(Secure Token Service)를 통해 IAM 역할�
 
 새 자격 증명 공급자 "sts:AssumeRoleWithWebIdentity"
 
-## 준비
-### 클러스터의 서비스 계정에 대한 IAM 역할 활성화
+### 준비
+
+#### 클러스터의 서비스 계정에 대한 IAM 역할 활성화
+
 서비스 계정에 대한 IAM 역할 기능은 새로운 Amazon EKS Kubernetes 버전 1.14 클러스터와 2019년 9월 3일 또는 그 이후에 버전 1.14 또는 1.13으로 업데이트된 클러스터에서 사용할 수 있습니다.
 
 ```
@@ -37,7 +42,8 @@ OpenID Connect 발급자 URL 검색:
 aws eks describe-cluster --name eksworkshop-eksctl --query cluster.identity.oidc.issuer --output text
 ```
 
-## OIDC ID 공급자 생성
+### OIDC ID 공급자 생성
+
 클러스터의 서비스 계정에 IAM 역할을 사용하려면 IAM 콘솔에서 OIDC 자격 증명 공급자를 생성해야 합니다.
 
 eksctl 버전이 0.5.1 이상인지 eksctl 버전을 확인하십시오.
@@ -66,9 +72,10 @@ eksctl utils associate-iam-oidc-provider --cluster eksworkshop-eksctl --approve
 
 에 가면 IAM 콘솔의 자격 증명 공급자, 클러스터에 대해 OIDC 공급자가 생성된 것을 볼 수 있습니다.
 
-![](./images/irsa-oidc.png)
+![](../Beginner/images/irsa-oidc.png)
 
-## 서비스 계정에 대한 IAM 역할 생성
+### 서비스 계정에 대한 IAM 역할 생성
+
 포드의 컨테이너에 부여할 권한을 지정하는 IAM 정책을 생성합니다.
 
 이 워크숍에서 우리는 "이라는 정책을 관리하는 AWS 사용 AmazonS3ReadOnlyAccess 허용" get및 list모두를위한 당신의 S3 버킷을.
@@ -107,7 +114,8 @@ eksctl create iamserviceaccount \
 
 에 가면 [IAM 콘솔의 CloudFormation](https://console.aws.amazon.com/cloudformation/), 스택 " eksctl-eksworkshop-eksctl-addon-iamserviceaccount-default-iam-test "가 서비스 계정에 대한 역할을 생성 했음을 알 수 있습니다.
 
-## 서비스 계정에 대한 IAM 역할 지정
+### 서비스 계정에 대한 IAM 역할 지정
+
 이전 단계 에서 클러스터의 iam-test 라는 서비스 계정과 연결된 IAM 역할을 생성했습니다 .
 
 먼저 서비스 계정 iam-test이 있는지 확인 합니다.
@@ -138,14 +146,15 @@ Tokens:              iam-test-token-5n9cb
 Events:              <none>
 ```
 
-## 샘플 포드 배포
+### 샘플 포드 배포
+
 이제 필요한 모든 구성을 완료했으므로 두 개의 kubernetes를 실행할 것입니다. 직업 새로 생성된 IAM 역할:
 
-- job-s3.yaml : 명령의 결과를 출력합니다 aws s3 ls(이 작업은 성공해야 함).
+* job-s3.yaml : 명령의 결과를 출력합니다 aws s3 ls(이 작업은 성공해야 함).
+* job-ec2.yaml : 명령의 결과를 출력합니다 aws ec2 describe-instances --region ${AWS\_REGION}(이 작업은 실패해야 함).
 
-- job-ec2.yaml : 명령의 결과를 출력합니다 aws ec2 describe-instances --region ${AWS_REGION}(이 작업은 실패해야 함).
+#### S3 버킷 나열
 
-### S3 버킷 나열
 서비스 계정이 S3 버킷을 나열할 수 있는지 테스트하여 시작하겠습니다.
 
 ```
@@ -243,7 +252,8 @@ kubectl logs -l app=eks-iam-test-s3
 2021-05-17 15:44:41 eksworkshop-886836808448-us-east-1
 ```
 
-### EC2 인스턴스 나열
+#### EC2 인스턴스 나열
+
 이제 서비스 계정이 EC2 인스턴스를 나열할 수 없는지 확인하겠습니다.
 
 ```
@@ -295,7 +305,8 @@ kubectl logs -l app=eks-iam-test-ec2
 An error occurred (UnauthorizedOperation) when calling the DescribeInstances operation: You are not authorized to perform this operation.
 ```
 
-# CLEAN UP
+## CLEAN UP
+
 정리하려면 다음 단계를 따르세요.
 
 ```
@@ -312,8 +323,3 @@ rm -rf ~/environment/irsa/
 
 aws s3 rb s3://eksworkshop-$ACCOUNT_ID-$AWS_REGION --region $AWS_REGION --force
 ```
-
-
-
-
-
