@@ -2,9 +2,9 @@
 
 * [EKS-LAB](README.md)
 * [Introduction](Introduction/README.md)
-  * [쿠버네티스 소개](Introduction/010\_introduction.md)
-  * [시작하기](Introduction/020\_prerequisites.md)
-  * [다음을 사용하여 시작 EKSCTL](Introduction/030\_eksctl.md)
+  * [쿠버네티스 소개](Introduction/010-introduction.md)
+  * [시작하기](Introduction/020-prerequisites.md)
+  * [다음을 사용하여 시작 EKSCTL](Introduction/030-eksctl.md)
 * [Beginner](Beginner/README.md)
   * [KUBERNETES 대시보드 배포](Beginner/040\_dashboard.md)
   * [예제 마이크로서비스 배포](Beginner/050\_deploy.md)
